@@ -1,11 +1,36 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import "./App.css";
 
 
 const API_URL = import.meta.env.VITE_HISTORY_API_URL;
-const API_KEY = import.meta.env.VITE_HISTORY_API_KEY;
 
 function App() {
+  // --- Gate de senha (UX; validação real está na Twilio Function) ---
+  const [authorized, setAuthorized] = useState(false);
+  const [password, setPassword] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+
+  useEffect(() => {
+    const savedPassword = sessionStorage.getItem("history_viewer_password");
+    if (savedPassword) {
+      setPassword(savedPassword);
+      setAuthorized(true);
+    }
+  }, []);
+
+  const handlePasswordSubmit = (e) => {
+    e.preventDefault();
+    if (!password.trim()) {
+      setPasswordError("Digite a senha.");
+      return;
+    }
+    sessionStorage.setItem("history_viewer_password", password.trim());
+    setAuthorized(true);
+    setPasswordError("");
+  };
+
+  // --- Lógica normal do app ---
   const [rawNumber, setRawNumber] = useState("");
   const [loading, setLoading] = useState(false);
   const [conversations, setConversations] = useState([]);
@@ -20,6 +45,12 @@ function App() {
 
     if (!rawNumber.trim()) {
       setError("Informe um número de cliente.");
+      return;
+    }
+
+    if (!password.trim()) {
+      setAuthorized(false);
+      setError("Sessão sem senha. Informe a senha novamente.");
       return;
     }
 
@@ -41,10 +72,24 @@ function App() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-API-Key": API_KEY,
         },
-        body: JSON.stringify({ address }),
+        body: JSON.stringify({
+          address,
+          password: password.trim(),
+        }),
       });
+
+      if (resp.status === 401) {
+        await resp.json().catch(() => ({}));
+
+        sessionStorage.removeItem("history_viewer_password");
+        setAuthorized(false);
+        setPassword("");
+        setPasswordError("Senha inválida. Digite novamente.");
+
+        setLoading(false);
+        return;
+      }
 
       if (!resp.ok) {
         const data = await resp.json().catch(() => ({}));
@@ -69,18 +114,59 @@ function App() {
     return date.toLocaleString("pt-BR");
   };
 
+  // --- TELA DE SENHA: modal centralizado tipo alert ---
+  if (!authorized) {
+    return (
+      <div className="auth-root">
+        <div className="auth-backdrop" />
+        <div className="auth-modal">
+          <div className="auth-card">
+            <div className="auth-icon">🔒</div>
+            <h1 className="auth-title">Acesso restrito</h1>
+            <p className="auth-subtitle">
+              Este painel é destinado apenas a pessoas autorizadas. Informe a
+              senha de acesso para continuar.
+            </p>
+
+            <form onSubmit={handlePasswordSubmit} className="auth-form">
+              <label className="auth-field">
+                <span>Senha</span>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Digite a senha"
+                />
+              </label>
+              <button type="submit">Entrar</button>
+            </form>
+
+            {passwordError && (
+              <div className="auth-error">{passwordError}</div>
+            )}
+
+            <p className="auth-hint">
+              Compartilhe esta senha apenas com pessoas autorizadas.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // --- App normal (já passou pela tela de senha) ---
   return (
     <div className="app-root">
       <div className="app-card">
-        {/* Cabeçalho dentro do próprio card */}
         <header className="card-header">
           <h1>Histórico de Conversas</h1>
-          <p>Digite o número do cliente e visualize todas as conversas em um só lugar.</p>
+          <p>
+            Digite o número do cliente e visualize todas as conversas em um só
+            lugar.
+          </p>
         </header>
 
-        {/* Corpo do card */}
         <main className="card-main">
-          {/* Busca */}
           <form onSubmit={handleSearch} className="search-row">
             <label className="field">
               <span>Número do cliente (WhatsApp)</span>
@@ -97,7 +183,6 @@ function App() {
           </form>
           {error && <div className="error-banner">{error}</div>}
 
-          {/* Grid: lista + conversa */}
           <section className="content-area">
             <aside className="conversations-list">
               <h2>Conversas</h2>
@@ -125,9 +210,12 @@ function App() {
                     </div>
                     {conv.messages?.length > 0 && (
                       <div className="conv-preview">
-                        {conv.messages[conv.messages.length - 1].body?.slice(0, 60)}
-                        {conv.messages[conv.messages.length - 1].body?.length > 60 &&
-                          "..."}
+                        {conv.messages[conv.messages.length - 1].body?.slice(
+                          0,
+                          60
+                        )}
+                        {conv.messages[conv.messages.length - 1].body?.length >
+                          60 && "..."}
                       </div>
                     )}
                   </li>
