@@ -1,0 +1,317 @@
+/* Reset básico */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+}
+
+/* Página: fundo escuro, scroll normal */
+body {
+  background-color: #020617;
+  overflow-y: auto;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #e5e7eb;
+}
+
+/* Centraliza o card na horizontal, fixo mais pro topo */
+.app-root {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 24px 16px;
+}
+
+/* CARD PRINCIPAL – largura estável */
+.app-card {
+  width: min(1200px, 100% - 32px);
+  background: radial-gradient(circle at top left, #1d4ed8, #020617 55%);
+  border-radius: 20px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8);
+  border: 1px solid #1f2937;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Cabeçalho dentro do card */
+.card-header {
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.9);
+}
+
+.card-header h1 {
+  margin: 0 0 4px;
+}
+
+.card-header p {
+  margin: 0;
+  color: #cbd5f5;
+}
+
+/* Corpo do card: busca + grade principal
+   max-height garante que a parte de baixo caiba na tela
+   e que o scroll seja INTERNO ao card */
+.card-main {
+  padding: 16px 24px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: rgba(15, 23, 42, 0.95);
+  box-sizing: border-box;
+  max-height: calc(100vh - 140px); /* ~ altura total da tela - header do card */
+}
+
+/* LINHA DE BUSCA */
+
+.search-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.field span {
+  font-size: 14px;
+  margin-bottom: 4px;
+  color: #9ca3af;
+}
+
+.field input {
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #374151;
+  background-color: #020617;
+  color: #e5e7eb;
+}
+
+.field input:focus {
+  outline: none;
+  border-color: #3b82f6;
+}
+
+.search-row button {
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: none;
+  background: linear-gradient(to right, #3b82f6, #6366f1);
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.search-row button:disabled {
+  opacity: 0.7;
+  cursor: default;
+}
+
+.error-banner {
+  margin-top: 4px;
+  padding: 8px 10px;
+  background: rgba(220, 38, 38, 0.15);
+  border: 1px solid rgba(220, 38, 38, 0.4);
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+/* ÁREA PRINCIPAL (lista + conversa)
+   flex:1 + min-height:0 + overflow:hidden = grid ocupa
+   só o espaço disponível e não cresce mais que isso */
+.content-area {
+  margin-top: 8px;
+  display: grid;
+  grid-template-columns: minmax(260px, 30%) minmax(0, 1fr);
+  gap: 16px;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* LISTA DE CONVERSAS */
+
+.conversations-list {
+  background: #020617;
+  border-radius: 12px;
+  border: 1px solid #1f2937;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0; /* permite encolher dentro da grid */
+}
+
+.conversations-list h2 {
+  margin: 0 0 8px;
+  font-size: 16px;
+}
+
+/* AQUI é onde a lista rola */
+.conversations-list ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.loading,
+.empty {
+  font-size: 14px;
+  color: #9ca3af;
+  padding: 8px 4px;
+}
+
+.conv-item {
+  padding: 8px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-bottom: 6px;
+  background: transparent;
+  transition: background 0.15s ease, transform 0.1s ease;
+  border: 1px solid transparent;
+}
+
+.conv-item:hover {
+  background: rgba(31, 41, 55, 0.8);
+  transform: translateY(-1px);
+}
+
+.conv-item.selected {
+  background: rgba(37, 99, 235, 0.25);
+  border-color: #3b82f6;
+}
+
+.conv-title {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.conv-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #9ca3af;
+  margin-top: 2px;
+}
+
+.conv-preview {
+  font-size: 12px;
+  color: #d1d5db;
+  margin-top: 4px;
+}
+
+/* VISUALIZAÇÃO DA CONVERSA */
+
+.conversation-view {
+  background: #020617;
+  border-radius: 12px;
+  border: 1px solid #1f2937;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.conv-header {
+  border-bottom: 1px solid #1f2937;
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+}
+
+.conv-header h2 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.conv-header p {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+/* AQUI é onde as mensagens rolam */
+.messages-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* BALÕES DE MENSAGEM */
+
+.message-bubble {
+  max-width: 70%;
+  padding: 8px 10px;
+  border-radius: 10px;
+  font-size: 13px;
+  display: inline-flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.message-bubble.customer {
+  align-self: flex-start;
+  background: #111827;
+  border: 1px solid #1f2937;
+}
+
+.message-bubble.agent {
+  align-self: flex-end;
+  background: #2563eb;
+  border: 1px solid #1d4ed8;
+}
+
+.message-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  opacity: 0.8;
+}
+
+.message-body {
+  white-space: pre-wrap;
+}
+
+.placeholder {
+  margin: auto;
+  text-align: center;
+  color: #9ca3af;
+  font-size: 14px;
+}
+
+/* RESPONSIVO */
+
+@media (max-width: 900px) {
+  .app-root {
+    padding: 16px 8px;
+  }
+
+  .app-card {
+    width: 100%;
+  }
+
+  .card-main {
+    max-height: none; /* em mobile deixa crescer e usa scroll da página */
+  }
+
+  .content-area {
+    grid-template-columns: 1fr;
+    overflow: visible;
+  }
+}
